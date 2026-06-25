@@ -33,26 +33,59 @@ Window {
         // i get the values from mouse based on user input 
         MouseArea {
             anchors.fill: parent
-            
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            property int activeButton: Qt.NoButton
+
             property int lastX: 0
             property int lastY: 0
-
+            property int current:0
             onPressed: (mouse) => {
                 lastX = mouse.x
                 lastY = mouse.y
+                activeButton = mouse.button
             }
+            
 
             onPositionChanged: (mouse) => {
-                if (pressed) {   
-                    let deltaX = mouse.x - lastX
-                    let deltaY = mouse.y - lastY
+                if (pressed) {
+                     if (activeButton === Qt.RightButton) {
+                       
 
-                    // it rotates the pivot (there is no skeletal mesh animation we rotate the point where second mesh is attached to)
-                    topMeshPivot.eulerRotation.y += deltaX * 0.5
-                    topMeshPivot.eulerRotation.x += deltaY * 0.5
+                        let deltaX = mouse.x - lastX
+                        lastX = mouse.x
 
-                    lastX = mouse.x
-                    lastY = mouse.y
+                        baseMesh.eulerRotation.x += deltaX * 0.5
+                        topMeshPivot.eulerRotation.x+= deltaX * 0.5
+       
+                   
+
+                    }
+                    else{
+                                            
+                        console.log(activeButton)
+                        
+                        let deltaY = mouse.y - lastY
+
+                        // it rotates the pivot (there is no skeletal mesh animation we rotate the point where second mesh is attached to)
+                        
+                        current = topMeshPivot.position.y
+                        if(current- deltaY>15 || current-deltaY<-15){
+                            
+                        }
+                        else{
+                            let angle = topMeshPivot.z *3.141/180.0
+                            let forwardX = Math.cos(angle)
+                            let forwardY = Math.sin(angle)
+                            topMeshPivot.position.y -=  deltaY *0.5
+                            //topMeshPivot.position.x -= forwardY * deltaY
+
+                        }
+                        
+
+                        lastY = mouse.y
+                    
+
+                    }
                 }
             }
 
@@ -60,12 +93,13 @@ Window {
                 let zoomSpeed = 0.5; 
                 camera.z -= wheel.angleDelta.y * zoomSpeed;  // zoom in zoom out logic
 
-                if (camera.z < 50) {
-                    camera.z = 50;
-                } else if (camera.z > 2000) {
-                    camera.z = 2000;
+                if (camera.z < 250) {
+                    camera.z = 250;
+                } else if (camera.z > 5000) {
+                    camera.z = 5000;
                 }
             }
+
         }
 
         // --- VISUAL DEBUGGER ---
@@ -94,22 +128,23 @@ Window {
             RuntimeLoader {
                 id: baseMesh  //represents base mesh
                 // UPDATE THIS PATH:
-                source: "file:///C:/comapare/models/part1.glb"  //folder and file name 
+                source: "file:///C:/comapare/models/meshes/r_base.glb"  //folder and file name 
                 
-                // scale: Qt.vector3d(100, 100, 100) 
+                scale: Qt.vector3d(100, 100, 100) 
             }
 
             // 2. The pivot node controlling the top mesh
             Node {
                 id: topMeshPivot
-                y:5 // if meshes pivot point is correctly adjusted make it 0. 
+                y:0 // if meshes pivot point is correctly adjusted make it 0. 
                 
                 // child mesh
                 RuntimeLoader {
                     id: topMesh
                     // UPDATE THIS PATH:
-                    source: "file:///C:/comapare/models/part2.glb"
-                    
+                    source: "file:///C:/comapare/models/meshes/r_grabber.glb"
+                    scale: Qt.vector3d(100, 100, 100) 
+
                 }
             }
         }
